@@ -95,8 +95,7 @@ def main(source_dir: str, output_dir: str, years: List[int], fields: List[str], 
 
 source_directory = "../.."
 output_directory = "../../cleaned"
-years_to_process = ["00", "01", "02"]
+years_to_process = ["00", "01", "02", "03"]
 fields_to_process = ["Computer Science", "Physics", "Mathematics"]
 num_processes = multiprocessing.cpu_count()  # Use all available CPU cores
-
 main(source_directory, output_directory, years_to_process, fields_to_process, num_processes)
