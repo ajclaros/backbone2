@@ -110,9 +110,9 @@ def main(source_dir: str, output_dir: str, years: List[int], fields: List[str], 
             process_year_field(year, field, source_dir, output_dir, num_processes, chunk_size, max_memory_percent)
 
 if __name__ == "__main__":
-    source_directory = "/path/to/uncompressed/data"
-    output_directory = "/path/to/processed/data"
-    years_to_process = [2021, 2022, 2023]
+    source_directory = "../.."
+    output_directory = "../../cleaned"
+    years_to_process = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20']
     fields_to_process = ["Computer Science", "Physics", "Mathematics"]
     num_processes = multiprocessing.cpu_count() // 2  # Use half of available CPU cores
     chunk_size = 100  # Process 100 papers at a time
