@@ -1,6 +1,7 @@
 import json
 import os
 import multiprocessing
+import itertools
 from typing import Dict, List, Tuple, Iterator
 from functools import partial
 from tqdm import tqdm
@@ -47,16 +48,15 @@ def process_paper(paper: Dict) -> Dict:
         )
         cleaned_body.append({
             'section': section['section'],
+            'sec_number': section['sec_number'],
+            'sec_type': section['sec_type'],
+            'content_type': section['content_type'],
             'text': cleaned_section,
-            'formula_lookup': section_formula_lookup,
-            'citation_lookup': section_citation_lookup
         })
 
     return {
         'paper_id': paper['paper_id'],
         'cleaned_abstract': cleaned_abstract,
-        'abstract_formula_lookup': abstract_formula_lookup,
-        'abstract_citation_lookup': abstract_citation_lookup,
         'cleaned_body': cleaned_body
     }
 
@@ -104,18 +104,40 @@ def process_year_field(year: int, field: str, source_dir: str, output_dir: str, 
                 chunk_size = max(1, chunk_size // 2)
                 print(f"Memory usage high. Adjusting to {num_processes} processes and chunk size {chunk_size}")
 
-def main(source_dir: str, output_dir: str, years: List[int], fields: List[str], num_processes: int, chunk_size: int, max_memory_percent: float):
+def main(source_dir: str, output_dir: str, num_processes: int, chunk_size: int, max_memory_percent: float):
+    # format in finished.txt is {year} {field}
+    # have two arrays, one for years and one for fields
+    with open("finished.txt", "r") as f:
+        years = []
+        fields = []
+        for line in f:
+            year, field = line.strip().split(maxsplit=1)
+            years.append(year)
+            fields.append(field)
+        years = list(set(years))
+        fields = list(set(fields))
+
     for year in years:
+        print(f"Processing year {year}")
         for field in fields:
+            # check if folder exists, if it does, then continue
+            # if it doesn't, then create the folder, process the year and field
+            if os.path.exists(f"{output_dir}/{year}/{field}"):
+                print(f"Folder {output_dir}/{year}/{field} already exists. Skipping.")
+                continue
+            print(f"Processing field {field}")
             process_year_field(year, field, source_dir, output_dir, num_processes, chunk_size, max_memory_percent)
+
 
 if __name__ == "__main__":
     source_directory = "../.."
     output_directory = "../../cleaned"
-    years_to_process = ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20']
-    fields_to_process = ["Computer Science", "Physics", "Mathematics"]
-    num_processes = multiprocessing.cpu_count() // 2  # Use half of available CPU cores
+    # years_to_process = ['01', '02', '03', '04', '05']
+
+    # fields_to_process = ["Computer Science", "Physics", "Mathematics"]
+    num_processes = multiprocessing.cpu_count()# // 2  # Use half of available CPU cores
     chunk_size = 100  # Process 100 papers at a time
     max_memory_percent = 80.0  # Adjust processes if memory usage exceeds 80%
 
-    main(source_directory, output_directory, years_to_process, fields_to_process, num_processes, chunk_size, max_memory_percent)
+    main(source_directory, output_directory, num_processes, chunk_size, max_memory_percent)
+    print("Done")
